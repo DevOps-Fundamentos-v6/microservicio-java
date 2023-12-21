@@ -103,6 +103,7 @@ jobs:
       - name: Deploy to Minikube
         run: |
           kubectl apply -f deployment.yml
+          curl -I http://localhost:8080/
     
   jmeter:
     name: Execute Jmeter
