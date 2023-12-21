@@ -25,10 +25,6 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew build
-          
-      - name: Run JaCoCo for code coverage
-        run: |
-          ./gradlew jacocoTestReport
 
   sonarcloud:
     name: Analyze SonarCloud
@@ -51,7 +47,7 @@ jobs:
       - name: Analyze SonarCloud
         run: |
           chmod +x gradlew
-          ./gradlew sonar -Dsonar.login=${{ secrets.TOKEN_SONARCLOUD }} --info --stacktrace
+          ./gradlew jacocoTestReport sonar -Dsonar.login=${{ secrets.TOKEN_SONARCLOUD }} --info --stacktrace
         
   jmeter:
     name: Execute Jmeter
