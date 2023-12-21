@@ -24,7 +24,13 @@ jobs:
       - name: Build
         run: |
           chmod +x gradlew
-          ./gradlew build --info --stacktrace
+          ./gradlew build
+          
+      - name: Copy artifacts to directory dist
+        run: |
+          rm -rf $GITHUB_WORKSPACE/dist
+          mkdir -p $GITHUB_WORKSPACE/dist
+          cp -r build/* $GITHUB_WORKSPACE/dist/
 
   sonarcloud:
     name: Analyze SonarCloud
