@@ -56,11 +56,59 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew jacocoTestReport sonar -Dsonar.login=${{ secrets.TOKEN_SONARCLOUD }} --info --stacktrace
+   
+  jmeter:
+    name: Execute Jmeter
+    runs-on: ubuntu-latest
+    needs: sonarcloud
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
+      - name: Download Apache JMeter
+        run: |
+          curl -LJO https://downloads.apache.org/jmeter/binaries/apache-jmeter-5.6.2.tgz
+          tar -xvzf apache-jmeter-5.6.2.tgz
+
+      #- name: Run JMeter tests
+      #  run: |
+      #    ./path/to/apache-jmeter/bin/jmeter.sh -n -t Jmeter/scripts/testscript.jmx -l Jmeter/resultados/testresult.jtl
+                
+  postman:
+    name: Execute Postman
+    runs-on: ubuntu-latest
+    needs: sonarcloud
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download artifact java app
+        uses: actions/download-artifact@v3
+        with:
+          name: java-app
+          path: .
+
+      - name: Download Node.js And Newman
+        run: |
+          sudo apt-get install -y nodejs
+          npm install -g newman
+
+      - name: Run Postman tests
+        run: |
+          chmod 755 testing-web-0.0.1-SNAPSHOT.jar
+          java -jar testing-web-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &
+          curl -I http://localhost:8080/
+          kill -SIGTERM $(ps aux | grep "java -jar testing-w" | awk '{print $2}')
+      #    newman run Postman/scripts/postman-collection.json
+  
   dockerbuild:
     name: Docker build
     runs-on: ubuntu-latest
-    needs: sonarcloud
+    needs:
+      - postman
+      - jmeter
     if: success()
     steps:
       - name: Checkout code
@@ -90,7 +138,7 @@ jobs:
       - name: Docker push
         run: |
           docker push lobozoldick/microservicio-java
-        
+         
   deploy:
     name: Docker Deployment
     runs-on: self-hosted
@@ -103,52 +151,3 @@ jobs:
       - name: Deploy to Minikube
         run: |
           kubectl apply -f deployment.yml
-          kubectl port-forward deployment/microservicio-java-deployment 8080:8080
-          curl -I http://localhost:8080/
-    
-  jmeter:
-    name: Execute Jmeter
-    runs-on: ubuntu-latest
-    needs: deploy
-    if: success()
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Download Apache JMeter
-        run: |
-          curl -LJO https://downloads.apache.org/jmeter/binaries/apache-jmeter-5.6.2.tgz
-          tar -xvzf apache-jmeter-5.6.2.tgz
-
-      #- name: Run JMeter tests
-      #  run: |
-      #    ./path/to/apache-jmeter/bin/jmeter.sh -n -t Jmeter/scripts/testscript.jmx -l Jmeter/resultados/testresult.jtl
-                
-  postman:
-    name: Execute Postman
-    runs-on: ubuntu-latest
-    needs: deploy
-    if: success()
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Download artifact java app
-        uses: actions/download-artifact@v3
-        with:
-          name: java-app
-          path: .
-
-      - name: Download Node.js And Newman
-        run: |
-          sudo apt-get install -y nodejs
-          npm install -g newman
-
-      - name: Run Postman tests
-        run: |
-          chmod 755 testing-web-0.0.1-SNAPSHOT.jar
-          java -jar testing-web-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &
-          curl -I http://localhost:8080/
-          kill -SIGTERM $(ps aux | grep "java -jar testing-w" | awk '{print $2}')
-      #    newman run Postman/scripts/postman-collection.json
-  
