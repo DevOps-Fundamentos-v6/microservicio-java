@@ -133,12 +133,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Download artifact java app
+        uses: actions/download-artifact@v3
+        with:
+          name: java-app
+          path: .
+
       - name: Download Node.js And Newman
         run: |
           sudo apt-get install -y nodejs
           npm install -g newman
 
-      #- name: Run JMeter tests
-      #  run: |
+      - name: Run Postman tests
+        run: |
+          chmod 755 testing-web-0.0.1-SNAPSHOT.jar
+          java -jar testing-web-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &
+          curl -I http://localhost:8080/
+          kill -SIGTERM $(ps aux | grep "java -jar testing-w" | awk '{print $2}')
       #    newman run Postman/scripts/postman-collection.json
   
