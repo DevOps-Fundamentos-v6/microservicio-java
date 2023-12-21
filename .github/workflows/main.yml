@@ -27,6 +27,12 @@ jobs:
           ./gradlew build
           cd $GITHUB_WORKSPACE/build/libs/
           ls -lah
+          
+      - name: Archive artifact java app
+        uses: actions/upload-artifact@v2
+        with:
+          name: java-app
+          path: $GITHUB_WORKSPACE/build/libs/testing-web-0.0.1-SNAPSHOT.jar
 
   sonarcloud:
     name: Analyze SonarCloud
@@ -67,15 +73,17 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          
-      - name: Copy build into proyect
-        run: |
-          cp $GITHUB_WORKSPACE/build/libs/testing-web-0.0.1-SNAPSHOT.jar .
-          chmod 755 testing-web-0.0.1-SNAPSHOT.jar
-          ls -lah
+
+      - name: Download artifact java app
+        uses: actions/download-artifact@v2
+        with:
+          name: java-app
+          path: .
           
       - name: Docker build
         run: |
+          chmod 755 testing-web-0.0.1-SNAPSHOT.jar
+          ls -lah
           docker build --tag lobozoldick/microservicio-java:latest .
           docker images
 
