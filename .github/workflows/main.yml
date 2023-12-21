@@ -33,105 +33,11 @@ jobs:
         with:
           name: java-app
           path: build/libs/testing-web-0.0.1-SNAPSHOT.jar
-
-  sonarcloud:
-    name: Analyze SonarCloud
-    runs-on: ubuntu-latest
-    needs: build
-    if: success()
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-
-      - name: Analyze SonarCloud
-        run: |
-          chmod +x gradlew
-          #./gradlew jacocoTestReport sonar -Dsonar.login=${{ secrets.TOKEN_SONARCLOUD }} --info --stacktrace
-   
-  jmeter:
-    name: Execute Jmeter
-    runs-on: ubuntu-latest
-    needs: sonarcloud
-    if: success()
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Download artifact java app
-        uses: actions/download-artifact@v3
-        with:
-          name: java-app
-          path: .
-          
-      - name: Run java app por test
-        run: |
-          chmod +x bash/scripts/wait_application.sh
-          ./bash/scripts/wait_application.sh
-          curl -I http://localhost:8080/
-
-      - name: Download Apache JMeter
-        run: |
-          curl -LJO https://downloads.apache.org/jmeter/binaries/apache-jmeter-5.6.2.tgz
-          tar -xvzf apache-jmeter-5.6.2.tgz
-
-      #- name: Run JMeter tests
-      #  run: |
-      #    chmod -x apache-jmeter/bin/jmeter.sh
-      #    ./apache-jmeter/bin/jmeter.sh -n -t Jmeter/scripts/testscript.jmx -l Jmeter/resultados/testresult.jtl
-
-      - name: Close java app por test
-        run: |
-          kill -SIGTERM $(ps aux | grep "java -jar testing-w" | awk '{print $2}')
-                
-  postman:
-    name: Execute Postman
-    runs-on: ubuntu-latest
-    needs: sonarcloud
-    if: success()
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Download artifact java app
-        uses: actions/download-artifact@v3
-        with:
-          name: java-app
-          path: .
-
-      - name: Download Node.js And Newman
-        run: |
-          sudo apt-get install -y nodejs
-          npm install -g newman
-
-      - name: Run java app por test
-        run: |
-          chmod +x bash/scripts/wait_application.sh
-          ./bash/scripts/wait_application.sh
-          curl -I http://localhost:8080/
-      
-      - name: Run Postman tests
-        run: |         
-          newman run Postman/scripts/pruebas_Aceptacion.postman_collection.json
-      
-      - name: Close java app por test
-        run: |
-          kill -SIGTERM $(ps aux | grep "java -jar testing-w" | awk '{print $2}')
   
   dockerbuild:
     name: Docker build
     runs-on: ubuntu-latest
-    needs:
-      - postman
-      - jmeter
+    needs: build
     if: success()
     steps:
       - name: Checkout code
@@ -161,53 +67,20 @@ jobs:
       - name: Docker push
         run: |
           docker push lobozoldick/microservicio-java
-         
-  deploy:
-    name: Docker Deployment
-    runs-on: self-hosted
-    needs: dockerbuild
-    if: success()
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        
-      - name: Deploy to Minikube
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCLOUD_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Deploy to Google Cloud Run
         run: |
-          kubectl apply -f deployment.yml
-          
-  performance_test:
-    runs-on: ubuntu-latest
-    needs: deploy
-    if: success()
-    services:
-      docker:
-        image: lobozoldick/microservicio-java:latest
-        ports:
-          - 8080:8080
-        options: --entrypoint "bash"  # Inicia el contenedor con un shell para ejecutar comandos adicionales
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Check Docker logs
-      run: |
-        CONTAINER_ID=$(docker ps -q)
-        docker logs $CONTAINER_ID
-      
-    - name: Run java app por test
-      run: |
-        chmod +x bash/scripts/consultingLocalhost.sh
-        ./bash/scripts/consultingLocalhost.sh
-        curl -I http://localhost:8080/
-
-    - name: Download Node.js and Newman
-      run: |
-        sudo apt-get install -y nodejs
-        npm install -g newman
-
-    - name: Run Postman tests
-      run: |
-        newman run Postman/scripts/pruebas_Aceptacion.postman_collection.json
-        
+          gcloud run deploy microservicio-java \
+            --image gcr.io/devops-v6-microservicio-java/lobozoldick/microservicio-java:latest \
+            --platform managed \
+            --region us-central1
+        env:
+          GCLOUD_PROJECT_ID: ${{ secrets.GCLOUD_PROJECT_ID }}
   
