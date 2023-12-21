@@ -1,6 +1,6 @@
 FROM openjdk:11-jre
 
-EXPOSE 8085
+EXPOSE 8080
 
 ADD testing-web-0.0.1-SNAPSHOT.jar /app/testing-web-0.0.1-SNAPSHOT.jar
 
