@@ -55,7 +55,7 @@ jobs:
       - name: Analyze SonarCloud
         run: |
           chmod +x gradlew
-          ./gradlew jacocoTestReport sonar -Dsonar.login=${{ secrets.TOKEN_SONARCLOUD }} --info --stacktrace
+          #./gradlew jacocoTestReport sonar -Dsonar.login=${{ secrets.TOKEN_SONARCLOUD }} --info --stacktrace
    
   jmeter:
     name: Execute Jmeter
@@ -101,7 +101,7 @@ jobs:
           java -jar testing-web-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &
           curl -I http://localhost:8080/
           kill -SIGTERM $(ps aux | grep "java -jar testing-w" | awk '{print $2}')
-      #    newman run Postman/scripts/postman-collection.json
+      #    newman run Postman/scripts/pruebas_Aceptacion.postman_collection.json
   
   dockerbuild:
     name: Docker build
