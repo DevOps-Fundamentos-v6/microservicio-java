@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservicio-java-deployment
+  labels:
+    app: microservicio-java
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: microservicio-java
+  template:
+    metadata:
+      labels:
+        app: microservicio-java
+    spec:
+      containers:
+      - name: microservicio-java
+        image: lobozoldick/microservicio-java:latest
+        ports:
+        - containerPort: 8085
