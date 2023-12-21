@@ -66,6 +66,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Download artifact java app
+        uses: actions/download-artifact@v3
+        with:
+          name: java-app
+          path: .
+          
+      - name: Run java app por test
+        run: |
+          chmod +x bash/scripts/wait_application.sh
+          ./bash/scripts/wait_application.sh
+          curl -I http://localhost:8080/
+
       - name: Download Apache JMeter
         run: |
           curl -LJO https://downloads.apache.org/jmeter/binaries/apache-jmeter-5.6.2.tgz
@@ -73,7 +85,12 @@ jobs:
 
       #- name: Run JMeter tests
       #  run: |
-      #    ./path/to/apache-jmeter/bin/jmeter.sh -n -t Jmeter/scripts/testscript.jmx -l Jmeter/resultados/testresult.jtl
+      #    chmod -x apache-jmeter/bin/jmeter.sh
+      #    ./apache-jmeter/bin/jmeter.sh -n -t Jmeter/scripts/testscript.jmx -l Jmeter/resultados/testresult.jtl
+
+      - name: Close java app por test
+        run: |
+          kill -SIGTERM $(ps aux | grep "java -jar testing-w" | awk '{print $2}')
                 
   postman:
     name: Execute Postman
@@ -95,13 +112,19 @@ jobs:
           sudo apt-get install -y nodejs
           npm install -g newman
 
-      - name: Run Postman tests
+      - name: Run java app por test
         run: |
           chmod +x bash/scripts/wait_application.sh
           ./bash/scripts/wait_application.sh
           curl -I http://localhost:8080/
+      
+      - name: Run Postman tests
+        run: |         
+          newman run Postman/scripts/pruebas_Aceptacion.postman_collection.json
+      
+      - name: Close java app por test
+        run: |
           kill -SIGTERM $(ps aux | grep "java -jar testing-w" | awk '{print $2}')
-      #    newman run Postman/scripts/pruebas_Aceptacion.postman_collection.json
   
   dockerbuild:
     name: Docker build
