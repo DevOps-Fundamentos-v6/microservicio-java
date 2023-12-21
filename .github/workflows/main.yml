@@ -25,15 +25,14 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew build
-          cd $GITHUB_WORKSPACE/build/libs/
-          ls -lah
+          ls -lah $GITHUB_WORKSPACE/build/libs/
           
       - name: Archive artifact java app
         if: success()
         uses: actions/upload-artifact@v3
         with:
           name: java-app
-          path: $GITHUB_WORKSPACE/build/libs/testing-web-0.0.1-SNAPSHOT.jar
+          path: build/libs/testing-web-0.0.1-SNAPSHOT.jar
 
   sonarcloud:
     name: Analyze SonarCloud
