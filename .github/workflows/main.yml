@@ -21,10 +21,14 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
           restore-keys: ${{ runner.os }}-gradle
           
-      - name: Build
+      - name: Build with Gradle
         run: |
           chmod +x gradlew
           ./gradlew build
+          
+      - name: Run JaCoCo for code coverage
+        run: |
+          ./gradlew jacocoTestReport
 
   sonarcloud:
     name: Analyze SonarCloud
