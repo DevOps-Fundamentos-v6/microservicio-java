@@ -189,6 +189,11 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+
+    - name: Check Docker logs
+      run: |
+        CONTAINER_ID=$(docker ps -q)
+        docker logs $CONTAINER_ID
       
     - name: Run java app por test
       run: |
