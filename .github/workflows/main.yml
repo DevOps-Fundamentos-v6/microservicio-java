@@ -188,7 +188,13 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+      
+    - name: Run java app por test
+      run: |
+        chmod +x bash/scripts/consultingLocalhost.sh
+        ./bash/scripts/consultingLocalhost.sh
+        curl -I http://localhost:8080/
 
     - name: Download Node.js and Newman
       run: |
