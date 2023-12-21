@@ -197,6 +197,6 @@ jobs:
 
     - name: Run Postman tests
       run: |
-        newman run Postman/scripts/postman-collection.json -e Postman/environments/your-environment.json --insecure
+        newman run Postman/scripts/pruebas_Aceptacion.postman_collection.json
         
   
