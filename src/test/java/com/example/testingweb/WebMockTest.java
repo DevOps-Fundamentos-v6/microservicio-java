@@ -25,8 +25,8 @@ public class WebMockTest {
 
 	@Test
 	public void greetingShouldReturnMessageFromService() throws Exception {
-		when(service.greet()).thenReturn("Lab Final DevOps-Fundamentos-v6");
+		when(service.greet()).thenReturn("Lab Final DevOps-Fundamentos-v6 Greeting");
 		this.mockMvc.perform(get("/greeting")).andDo(print()).andExpect(status().isOk())
-				.andExpect(content().string(containsString("Lab Final DevOps-Fundamentos-v6")));
+				.andExpect(content().string(containsString("Lab Final DevOps-Fundamentos-v6 Greeting")));
 	}
 }
