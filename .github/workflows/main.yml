@@ -9,7 +9,8 @@ jobs:
     name: Build and Analyze SonarCLoud
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -32,3 +33,37 @@ jobs:
           chmod +x gradlew
           ./gradlew build sonar -Dsonar.token=${{ secrets.TOKEN_SONARCLOUD }} --info --stacktrace
           
+  jmeter:
+    name: Execute Jmeter
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download Apache JMeter
+        run: |
+          curl -LJO https://downloads.apache.org/jmeter/binaries/apache-jmeter-5.6.2.tgz
+          tar -xvzf apache-jmeter-5.6.2.tgz
+
+      #- name: Run JMeter tests
+      #  run: |
+      #    ./path/to/apache-jmeter/bin/jmeter.sh -n -t Jmeter/scripts/testscript.jmx -l Jmeter/resultados/testresult.jtl
+                
+  postman:
+    name: Execute Postman
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download Node.js And Newman
+        run: |
+          sudo apt-get install -y nodejs
+          npm install -g newman
+
+      #- name: Run JMeter tests
+      #  run: |
+      #    newman run Postman/scripts/postman-collection.json
+  
