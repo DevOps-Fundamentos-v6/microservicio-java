@@ -98,7 +98,7 @@ jobs:
       - name: Run Postman tests
         run: |
           chmod +x bash/scripts/wait_application.sh
-          ./bash/scripts/wait_for_application.sh
+          ./bash/scripts/wait_application.sh
           curl -I http://localhost:8080/
           kill -SIGTERM $(ps aux | grep "java -jar testing-w" | awk '{print $2}')
       #    newman run Postman/scripts/pruebas_Aceptacion.postman_collection.json
