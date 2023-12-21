@@ -174,3 +174,29 @@ jobs:
       - name: Deploy to Minikube
         run: |
           kubectl apply -f deployment.yml
+          
+  performance_test:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: success()
+    services:
+      docker:
+        image: lobozoldick/microservicio-java:latest
+        ports:
+          - 8080:8080
+        options: --entrypoint "bash"  # Inicia el contenedor con un shell para ejecutar comandos adicionales
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Download Node.js and Newman
+      run: |
+        sudo apt-get install -y nodejs
+        npm install -g newman
+
+    - name: Run Postman tests
+      run: |
+        newman run Postman/scripts/postman-collection.json -e Postman/environments/your-environment.json --insecure
+        
+  
