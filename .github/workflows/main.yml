@@ -68,6 +68,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           
+      - name: Copy build into proyect
+        run: |
+          cp $GITHUB_WORKSPACE/build/libs/testing-web-0.0.1-SNAPSHOT.jar .
+          chmod 755 testing-web-0.0.1-SNAPSHOT.jar
+          ls -lah
+          
       - name: Docker build
         run: |
           docker build --tag lobozoldick/microservicio-java:latest .
