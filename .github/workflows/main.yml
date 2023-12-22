@@ -84,4 +84,21 @@ jobs:
 
       - name: Show Output
         run: echo ${{ steps.deploy.outputs.url }}
+
+      - name: Get Cloud Run authentication token
+        id: get-auth-token
+        uses: google-github-actions/auth@v2
+        with:
+          scopes: "https://www.googleapis.com/auth/cloud-platform"
+        env:
+          GCP_REGION: "us-central1"
+
+      - name: Save token to file
+        run: echo "${{ steps.get-auth-token.outputs.token }}" > gcp_token.txt
+
+      - name: Execute Postman tests
+        run: |
+          npm install -g newman
+          export GCP_TOKEN=$(cat gcp_token.txt)
+          newman run Postman/scripts/pruebas_Aceptacion.postman_collection.json --env-var GCP_TOKEN=$GCP_TOKEN
   
