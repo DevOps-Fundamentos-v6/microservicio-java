@@ -67,13 +67,7 @@ jobs:
       - name: Docker push
         run: |
           docker push lobozoldick/microservicio-java
-  
-  deploy:
-    name: Deployment Google Cloud Run
-    runs-on: ubuntu-latest
-    needs: dockerbuild
-    if: success()
-    steps:
+
       - name: Checkout code
         uses: actions/checkout@v3
         
@@ -113,7 +107,7 @@ jobs:
   postman:
     name: Execute Postman
     runs-on: ubuntu-latest
-    needs: deploy
+    needs: dockerbuild
     if: success()
     steps:
       - name: Checkout code
