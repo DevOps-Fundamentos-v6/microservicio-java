@@ -198,8 +198,8 @@ jobs:
           if: success()
           run: |         
             ls -lah
-            chmod -x apache-jmeter-5.6.2/bin/jmeter.sh
             cd apache-jmeter-5.6.2
+            chmod 755 bin/jmeter.sh
             mkdir reportHtml
             ./bin/jmeter.sh -n -t Jmeter/scripts/LoadTest.jmx -e -o ./reportHtml -l testresult.jtl
 
