@@ -43,13 +43,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://microservicio-java-ss7gplbrpq-uc.a.run.app",
-					"protocol": "https",
+					"raw": "{{URL}}",
 					"host": [
-						"microservicio-java-ss7gplbrpq-uc",
-						"a",
-						"run",
-						"app"
+						"{{URL}}"
 					]
 				}
 			},
@@ -92,13 +88,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://microservicio-java-ss7gplbrpq-uc.a.run.app/greeting",
-					"protocol": "https",
+					"raw": "{{URL}}/greeting",
 					"host": [
-						"microservicio-java-ss7gplbrpq-uc",
-						"a",
-						"run",
-						"app"
+						"{{URL}}"
 					],
 					"path": [
 						"greeting"
