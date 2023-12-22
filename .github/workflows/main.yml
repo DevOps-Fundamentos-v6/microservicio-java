@@ -140,14 +140,12 @@ jobs:
         with:
           name: url-cloud
           path: .
-          if-no-files-found: error
 
       - name: Download artifact token
         uses: actions/download-artifact@v3
         with:
           name: gcp-token
           path: .
-          if-no-files-found: error
 
       - name: Download Node.js And Newman
         run: |
@@ -173,24 +171,25 @@ jobs:
           run: |
             curl -LJO https://downloads.apache.org/jmeter/binaries/apache-jmeter-5.6.2.tgz
             tar -xvzf apache-jmeter-5.6.2.tgz
+            ls -lash
         
         - name: Download artifact url
           uses: actions/download-artifact@v3
           with:
             name: url-cloud
             path: apache-jmeter-5.6.2/
-            if-no-files-found: error
   
         - name: Download artifact token
           uses: actions/download-artifact@v3
           with:
             name: gcp-token
             path: apache-jmeter-5.6.2/
-            if-no-files-found: error
         
         - name: Run JMeter tests
+          if: success()
           run: |         
-            chmod -x apache-jmeter/bin/jmeter.sh
+            ls -lah
+            chmod -x apache-jmeter-5.6.2/bin/jmeter.sh
             cd apache-jmeter-5.6.2
             mkdir reportHtml
             ./bin/jmeter.sh -n -t Jmeter/scripts/LoadTest.jmx -e -o ./reportHtml -l testresult.jtl
