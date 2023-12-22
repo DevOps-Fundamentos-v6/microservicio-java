@@ -30,17 +30,26 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{GCP_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/",
-					"protocol": "http",
+					"raw": "https://microservicio-java-ss7gplbrpq-uc.a.run.app",
+					"protocol": "https",
 					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						""
+						"microservicio-java-ss7gplbrpq-uc",
+						"a",
+						"run",
+						"app"
 					]
 				}
 			},
@@ -70,15 +79,27 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{GCP_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/greeting",
-					"protocol": "http",
+					"raw": "https://microservicio-java-ss7gplbrpq-uc.a.run.app/greeting",
+					"protocol": "https",
 					"host": [
-						"localhost"
+						"microservicio-java-ss7gplbrpq-uc",
+						"a",
+						"run",
+						"app"
 					],
-					"port": "8080",
 					"path": [
 						"greeting"
 					]
