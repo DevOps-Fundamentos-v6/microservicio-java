@@ -6,7 +6,7 @@ on:
   
 jobs:
   build:
-    name: Build
+    name: Build App
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -33,11 +33,34 @@ jobs:
         with:
           name: java-app
           path: build/libs/testing-web-0.0.1-SNAPSHOT.jar
-  
-  dockerbuild:
-    name: Docker build
+
+  sonarcloud:
+    name: Analyze SonarCloud
     runs-on: ubuntu-latest
     needs: build
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Analyze SonarCloud
+        run: |
+          chmod +x gradlew
+          #./gradlew jacocoTestReport sonar -Dsonar.login=${{ secrets.TOKEN_SONARCLOUD }} --info --stacktrace
+  
+  deploy:
+    name: Deployment Docker and Cloud  Run
+    runs-on: ubuntu-latest
+    needs: sonarcloud
     if: success()
     steps:
       - name: Checkout code
@@ -68,12 +91,6 @@ jobs:
         run: |
           docker push lobozoldick/microservicio-java
 
-  deploy:
-    name: Deployment Google Cloud Run
-    runs-on: ubuntu-latest
-    needs: dockerbuild
-    if: success()
-    steps:      
       - name: Google Auth
         id: auth
         uses: google-github-actions/auth@v2
@@ -110,7 +127,7 @@ jobs:
   postman:
     name: Execute Postman
     runs-on: ubuntu-latest
-    needs: dockerbuild
+    needs: deploy
     if: success()
     steps:
       - name: Checkout code
