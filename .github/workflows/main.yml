@@ -151,12 +151,21 @@ jobs:
         run: |
           sudo apt-get install -y nodejs
           npm install -g newman
+          npm install -g newman-reporter-htmlextra
       
       - name: Run Postman tests
         run: |         
           export GCP_TOKEN=$(cat gcp_token.txt)
           export URL=$(cat url_cloud.txt)
-          newman run Postman/scripts/pruebas_Aceptacion.postman_collection.json --env-var GCP_TOKEN=$GCP_TOKEN --env-var URL=$URL
+          newman run Postman/scripts/pruebas_Aceptacion.postman_collection.json --env-var GCP_TOKEN=$GCP_TOKEN --env-var URL=$URL -r cli,htmlextra --reporter-htmlextra-export resultadoPostman.html
+
+      - name: Archive result HTML Postman
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: rwsultado-postman-html
+          path: resultadoPostman.html
+          if-no-files-found: error
 
   jmeter:
       name: Execute Jmeter
