@@ -163,7 +163,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v3
         with:
-          name: rwsultado-postman-html
+          name: resultado-postman-html
           path: resultadoPostman.html
           if-no-files-found: error
 
@@ -199,9 +199,10 @@ jobs:
           run: |         
             ls -lah
             cd apache-jmeter-5.6.2
+            ls -lah
             chmod 755 bin/jmeter.sh
             mkdir reportHtml
-            ./bin/jmeter.sh -n -t Jmeter/scripts/LoadTest.jmx -e -o ./reportHtml -l testresult.jtl
+            ./bin/jmeter.sh -n -t $GITHUB_WORKSPACE/Jmeter/scripts/LoadTest.jmx -e -o ./reportHtml -l testresult.jtl
 
         - name: Archive artifact jmeter-html-reports
           if: success()
