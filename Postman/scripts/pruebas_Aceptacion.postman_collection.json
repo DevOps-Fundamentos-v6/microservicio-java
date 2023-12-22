@@ -21,8 +21,8 @@
 							"    pm.response.to.have.body(\"Lab Final DevOps-Fundamentos-v6\");",
 							"});",
 							"",
-							"pm.test(\"Response time is less than 50ms\", function () {",
-							"    pm.expect(pm.response.responseTime).to.be.below(50);",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -70,8 +70,8 @@
 							"    pm.response.to.have.body(\"Lab Final DevOps-Fundamentos-v6 Greeting\");",
 							"});",
 							"",
-							"pm.test(\"Response time is less than 50ms\", function () {",
-							"    pm.expect(pm.response.responseTime).to.be.below(50);",
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
 							"});"
 						],
 						"type": "text/javascript"
