@@ -116,6 +116,7 @@ jobs:
         with:
           name: url-cloud
           path: url_cloud.txt
+          if-no-files-found: error
 
       - name: Archive artifact token
         if: success()
@@ -123,6 +124,7 @@ jobs:
         with:
           name: gcp-token
           path: gcp_token.txt
+          if-no-files-found: error
 
   postman:
     name: Execute Postman
@@ -138,12 +140,14 @@ jobs:
         with:
           name: url-cloud
           path: .
+          if-no-files-found: error
 
       - name: Download artifact token
         uses: actions/download-artifact@v3
         with:
           name: gcp-token
           path: .
+          if-no-files-found: error
 
       - name: Download Node.js And Newman
         run: |
@@ -155,11 +159,50 @@ jobs:
           export GCP_TOKEN=$(cat gcp_token.txt)
           export URL=$(cat url_cloud.txt)
           newman run Postman/scripts/pruebas_Aceptacion.postman_collection.json --env-var GCP_TOKEN=$GCP_TOKEN --env-var URL=$URL
+
+  jmeter:
+      name: Execute Jmeter
+      runs-on: ubuntu-latest
+      needs: deploy
+      if: success()
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
+  
+        - name: Download Apache JMeter
+          run: |
+            curl -LJO https://downloads.apache.org/jmeter/binaries/apache-jmeter-5.6.2.tgz
+            tar -xvzf apache-jmeter-5.6.2.tgz
+        
+        - name: Download artifact url
+          uses: actions/download-artifact@v3
+          with:
+            name: url-cloud
+            path: apache-jmeter-5.6.2/
+            if-no-files-found: error
+  
+        - name: Download artifact token
+          uses: actions/download-artifact@v3
+          with:
+            name: gcp-token
+            path: apache-jmeter-5.6.2/
+            if-no-files-found: error
+        
+        - name: Run JMeter tests
+          run: |         
+            chmod -x apache-jmeter/bin/jmeter.sh
+            cd apache-jmeter-5.6.2
+            mkdir reportHtml
+            ./bin/jmeter.sh -n -t Jmeter/scripts/LoadTest.jmx -e -o ./reportHtml -l testresult.jtl
+
+        - name: Archive artifact jmeter-html-reports
+          if: success()
+          uses: actions/upload-artifact@v3
+          with:
+            name: jmeter-html-reports
+            path: apache-jmeter-5.6.2/reportHtml
+            if-no-files-found: error
+
       
-      #- name: Execute Postman tests
-      #  run: |
-      #    npm install -g newman
-      #    export GCP_TOKEN=$(cat gcp_token.txt)
-      #    export URL=$(cat url_cloud.txt)
-      #    newman run Postman/scripts/pruebas_Aceptacion.postman_collection.json --env-var GCP_TOKEN=$GCP_TOKEN --env-var URL=$URL
+
   
