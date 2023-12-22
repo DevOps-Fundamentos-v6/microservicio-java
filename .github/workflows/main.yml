@@ -79,7 +79,7 @@ jobs:
         
       - name: Google Auth
         id: auth
-        uses: 'google-github-actions/auth@v2'
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
@@ -90,7 +90,6 @@ jobs:
           service: microservicio-java
           region: us-central1
           source: ./
-
 
       - name: Save token and url to file
         run: |
