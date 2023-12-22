@@ -55,7 +55,7 @@ jobs:
       - name: Analyze SonarCloud
         run: |
           chmod +x gradlew
-          #./gradlew jacocoTestReport sonar -Dsonar.login=${{ secrets.TOKEN_SONARCLOUD }} --info --stacktrace
+          ./gradlew jacocoTestReport sonar -Dsonar.login=${{ secrets.TOKEN_SONARCLOUD }} --info --stacktrace
   
   deploy:
     name: Deployment Docker and Cloud  Run
