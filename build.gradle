@@ -18,12 +18,12 @@ dependencies {
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
 }
 
-sonar { 
+sonar 
  properties {
-  property "sonar.proyectkey","Aghio-Usach_microservicio-java"
+  property "sonar.projectkey","Aghio-Usach_microservicio-java"
   property "sonar.organization","aghio-usach"
   property "sonar.host.url","https://sonarcloud.io/"
-  property "sonar.proyectname","microservicio-java"
+  property "sonar.projectname","microservicio-java"
   }	 
 }	
 test {
