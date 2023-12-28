@@ -1,0 +1,15 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Delete nueva rama
+      uses: actions/checkout@v2
+
+    - name: Delete rama
+      run: |
+        git branch -d feature-ms-diegoLucero-mensaje
