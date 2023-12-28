@@ -1,0 +1,15 @@
+name: CI_lab
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Nueva rama y checkout
+      uses: actions/checkout@v2
+
+    - name: Crear nueva rama y ubicarse en la rama
+      run: |
+        git checkout -b feature-ms-diegoLucero-mensaje
