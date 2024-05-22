@@ -1,0 +1,217 @@
+name: CI
+
+on:
+  push:
+  workflow_dispatch:
+  
+jobs:
+  build:
+    name: Build App
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: ${{ runner.os }}-gradle
+          
+      - name: Build with Gradle
+        run: |
+          chmod +x gradlew
+          ./gradlew build
+          ls -lah $GITHUB_WORKSPACE/build/libs/
+          
+      - name: Archive artifact java app
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: java-app
+          path: build/libs/testing-web-0.0.1-SNAPSHOT.jar
+
+  sonarcloud:
+    name: Analyze SonarCloud
+    runs-on: ubuntu-latest
+    needs: build
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Analyze SonarCloud
+        run: |
+          chmod +x gradlew
+          ./gradlew jacocoTestReport sonar -Dsonar.login=${{ secrets.TOKEN_SONARCLOUD }} --info --stacktrace
+  
+  deploy:
+    name: Deployment Docker and Cloud  Run
+    runs-on: ubuntu-latest
+    needs: sonarcloud
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Docker login
+        uses: docker/login-action@v2.2.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Download artifact java app
+        uses: actions/download-artifact@v3
+        with:
+          name: java-app
+          path: .
+          
+      - name: Docker build
+        run: |
+          chmod 755 testing-web-0.0.1-SNAPSHOT.jar
+          ls -lah
+          docker build --tag lobozoldick/microservicio-java:latest .
+          docker images
+
+      - name: Docker push
+        run: |
+          docker push lobozoldick/microservicio-java
+
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: microservicio-java
+          region: us-central1
+          source: ./
+
+      - name: Save token and url to file
+        run: |
+          echo ${{ steps.deploy.outputs.url }} > url_cloud.txt
+          gcloud auth print-identity-token > gcp_token.txt
+
+      - name: Archive artifact url
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: url-cloud
+          path: url_cloud.txt
+          if-no-files-found: error
+
+      - name: Archive artifact token
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: gcp-token
+          path: gcp_token.txt
+          if-no-files-found: error
+
+  postman:
+    name: Execute Postman
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download artifact url
+        uses: actions/download-artifact@v3
+        with:
+          name: url-cloud
+          path: .
+
+      - name: Download artifact token
+        uses: actions/download-artifact@v3
+        with:
+          name: gcp-token
+          path: .
+
+      - name: Download Node.js And Newman
+        run: |
+          sudo apt-get install -y nodejs
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
+      
+      - name: Run Postman tests
+        run: |         
+          export GCP_TOKEN=$(cat gcp_token.txt)
+          export URL=$(cat url_cloud.txt)
+          newman run Postman/scripts/pruebas_Aceptacion.postman_collection.json --env-var GCP_TOKEN=$GCP_TOKEN --env-var URL=$URL -r cli,htmlextra --reporter-htmlextra-export resultadoPostman.html
+
+      - name: Archive result HTML Postman
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: resultado-postman-html
+          path: resultadoPostman.html
+          if-no-files-found: error
+
+  jmeter:
+      name: Execute Jmeter
+      runs-on: ubuntu-latest
+      needs: deploy
+      if: success()
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
+  
+        - name: Download Apache JMeter
+          run: |
+            curl -LJO https://downloads.apache.org/jmeter/binaries/apache-jmeter-5.6.2.tgz
+            tar -xvzf apache-jmeter-5.6.2.tgz
+            ls -lash
+        
+        - name: Download artifact url
+          uses: actions/download-artifact@v3
+          with:
+            name: url-cloud
+            path: apache-jmeter-5.6.2/
+  
+        - name: Download artifact token
+          uses: actions/download-artifact@v3
+          with:
+            name: gcp-token
+            path: apache-jmeter-5.6.2/
+        
+        - name: Run JMeter tests
+          if: success()
+          run: |         
+            ls -lah
+            cd apache-jmeter-5.6.2
+            ls -lah
+            chmod 755 bin/jmeter.sh
+            mkdir reportHtml
+            ./bin/jmeter.sh -n -t $GITHUB_WORKSPACE/Jmeter/scripts/LoadTest.jmx -e -o ./reportHtml -l testresult.jtl
+
+        - name: Archive artifact jmeter-html-reports
+          if: success()
+          uses: actions/upload-artifact@v3
+          with:
+            name: jmeter-html-reports
+            path: apache-jmeter-5.6.2/reportHtml
+            if-no-files-found: error
+
+      
+
+  
