@@ -17,4 +17,19 @@ public class SmokeTest {
 	public void contextLoads() throws Exception {
 		assertThat(controller).isNotNull();
 	}
+
+	@Test
+	public void contextLoads1() throws Exception {
+		assertThat(controller).isNotNull();
+	}
+
+	@Test
+	public void contextLoads2() throws Exception {
+		assertThat(controller).isNotNull();
+	}
+
+	@Test
+	public void contextLoads3() throws Exception {
+		assertThat(controller).isNotNull();
+	}
 }
